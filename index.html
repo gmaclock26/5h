@@ -8,8 +8,8 @@
     <title>Avia Control</title>
     <!-- Favicon is wired to the logo asset in JS (see LOGO_SRC) -->
     <link rel="icon" id="faviconLink" type="image/jpeg" href="icon.jpg">
-    <!-- Yandex Games SDK (loaded before the game; init handled in JS) -->
-    <script src="https://yandex.ru/games/sdk/v2"></script>
+    <!-- CrazyGames SDK (loaded before the game; init handled in JS) -->
+    <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ============================================================
@@ -2425,7 +2425,7 @@
     </div>
 
     <!-- Libraries as classic global scripts (no ES modules) so the game runs
-         both from a local file (file://) AND inside Yandex Games. -->
+         both from a local file (file://) AND inside CrazyGames. -->
     <script src="libs/three.min.js"></script>
     <script src="libs/OrbitControls.global.js"></script>
     <script src="libs/gsap.min.js"></script>
@@ -3487,10 +3487,10 @@
            or their own rank — only the public top 10.
            ============================================================ */
         const LB_ID = 'lovemaria';            // Yandex leaderboard technical name
-        const LB_PLAYER_NAME = 'lovemaria';   // shown for the local fallback board
+        let LB_PLAYER_NAME = 'lovemaria';     // local board name (set to the CrazyGames username when available)
         let lbPlayerAvatar = '';   // filled from Yandex SDK if available
         let lbAuthorized = true;   // true off-platform; reflects real login on Yandex
-        let lbObject = null;       // ysdk.getLeaderboards() handle
+        let lbObject = null;       // leaderboard handle (unused on CrazyGames)
         let lbRealBoard = null;    // [{rank,name,bal,avatar,me}] from Yandex, else null
         let lbUserRank = 0;        // player's real rank (0 = not on the board)
 
@@ -3600,10 +3600,10 @@
         }
         window._renderLeaderboard = renderLeaderboard;
 
-        /* ---- Yandex leaderboard wiring ----
-           Prefers the current `ysdk.leaderboards` API; falls back to the
-           deprecated `ysdk.getLeaderboards()` for older SDK builds. Both are
-           normalised to { setScore, getEntries }. */
+        /* ---- Leaderboard wiring (INACTIVE on CrazyGames) ----
+           CrazyGames has no leaderboard API, so lbConnect is never called and
+           lbApi stays null — the board falls back to the local standings.
+           Kept here so the leaderboard can be re-wired to a backend later. */
         let lbApi = null;            // normalised { setScore, getEntries }
         function lbConnect(sdk) {
             if (!sdk) return Promise.resolve();
@@ -3689,9 +3689,9 @@
         window._refreshLeaderboard = lbSubmitAndRefresh;
 
         /* ============================================================
-           ADS  (Yandex)  — two formats:
-           • Fullscreen interstitial: shown at natural breaks (return to menu).
-             Yandex throttles it (≈once/60s) so we just request it.
+           ADS  (CrazyGames)  — two formats:
+           • Midgame interstitial: shown at natural breaks (return to menu).
+             CrazyGames throttles it (≈once/3min) so we just request it.
            • Rewarded video: the player opts in for an in-game cash bonus.
            Game audio/animation should pause while an ad plays.
            ============================================================ */
@@ -3744,32 +3744,35 @@
            onReward fires only if the player actually earned the reward. */
         function runRewardedAd(onReward) {
             const d = i18n[currentLang];
-            if (!ysdk || !ysdk.adv) { onReward(); return; }   // off-platform: grant now
+            if (!cg || !cg.ad) { onReward(); return; }        // off-platform: grant now
             _adInProgress = true;
             pauseGame(true);                                  // instant pause, no wait
             showAdLoading();                                  // centered loader card
             let rewarded = false;
-            const onOpen = () => { _adInProgress = true; hideAdLoading(); };
-            const onRewarded = () => { rewarded = true; };
-            const onClose = () => { hideAdLoading(); resumeAfterAd(); if (rewarded) onReward(); else flashDispatch(d.ad_failed, ''); };
-            const onError = () => { hideAdLoading(); resumeAfterAd(); flashDispatch(d.ad_failed, ''); };
+            const callbacks = {
+                // Ad opened: keep the game paused, drop the loader card.
+                adStarted: () => { _adInProgress = true; hideAdLoading(); },
+                // A rewarded ad that finishes in full earns the reward.
+                adFinished: () => { rewarded = true; hideAdLoading(); resumeAfterAd(); onReward(); },
+                // No fill / adblock / dismissed early → no reward.
+                adError: () => { hideAdLoading(); resumeAfterAd(); if (!rewarded) flashDispatch(d.ad_failed, ''); }
+            };
             try {
-                ysdk.adv.showRewardedVideo({ callbacks: {
-                    onOpen, onRewarded, onClose, onError,
-                    open: onOpen, rewarded: onRewarded, close: onClose, error: onError
-                } });
+                cg.ad.requestAd('rewarded', callbacks);
             } catch (e) { hideAdLoading(); resumeAfterAd(); flashDispatch(d.ad_failed, ''); }
         }
 
         // Interstitial (fullscreen) ad — safe no-op off-platform. Yandex
         // throttles frequency; we pause on open and resume on close.
         function showFullscreenAd() {
-            if (!ysdk || !ysdk.adv || _adInProgress) return;
-            const onOpen = () => { _adInProgress = true; pauseGame(true); };
-            const onClose = () => { resumeAfterAd(); };
-            const onError = () => { resumeAfterAd(); };
+            if (!cg || !cg.ad || _adInProgress) return;
+            const callbacks = {
+                adStarted: () => { _adInProgress = true; pauseGame(true); },
+                adFinished: () => { resumeAfterAd(); },
+                adError: () => { resumeAfterAd(); }
+            };
             try {
-                ysdk.adv.showFullscreenAdv({ callbacks: { onOpen, onClose, onError, open: onOpen, close: onClose, error: onError } });
+                cg.ad.requestAd('midgame', callbacks);
             } catch (e) { resumeAfterAd(); }
         }
         // Rewarded video — credits a cash bonus only if the player watched it.
@@ -3852,17 +3855,13 @@
         window._showAdForUpgrade = showAdForUpgrade;
 
         /* ============================================================
-           YANDEX REVIEW GIFT  — leave a review once → free ATR 72.
-           Only offered to authorized players who can review (per Yandex),
-           and only if not already claimed on this account (saved flag).
+           REVIEW GIFT  — was a Yandex-only feature (rate the game → free
+           ATR 72). CrazyGames has no review API, so the gift is disabled:
+           the card never renders. The grant code below is kept intact in
+           case it is later repurposed (e.g. tied to a rewarded ad).
            ============================================================ */
         function reviewGiftAvailable() {
-            // Show the gift until it's been claimed. The actual "leave a review"
-            // gating (and one-per-account) is enforced at claim time by the
-            // Yandex feedback API + the persisted reviewClaimed flag. Showing it
-            // regardless keeps it visible both on the platform and locally.
-            const onYandex = (typeof ysdk !== 'undefined' && ysdk);
-            return onYandex ? !reviewClaimed : !reviewClaimedSession;
+            return false;   // disabled: no review API on CrazyGames
         }
         function grantReviewGift() {
             const d = i18n[currentLang];
@@ -3880,27 +3879,8 @@
             renderModal();   // re-render whatever hangar/buy view is open
         }
         function requestReviewForGift() {
-            const onYandex = (typeof ysdk !== 'undefined' && ysdk);
-            if (onYandex ? reviewClaimed : reviewClaimedSession) return;
-            const d = i18n[currentLang];
-            // The free aircraft needs a free hangar slot. If the hangar is full,
-            // tell the player but KEEP the gift available (don't consume it).
-            if (fleet.length >= hangarSlots()) {
-                askConfirm(d.hangar_title, d.hangar_full, null, true);
-                return;
-            }
-            if (!ysdk || !ysdk.feedback || !ysdk.feedback.requestReview) {
-                // Off-platform fallback (testing): grant directly.
-                grantReviewGift();
-                return;
-            }
-            try {
-                ysdk.feedback.requestReview().then(res => {
-                    // res.feedbackSent === true means the player actually rated.
-                    if (res && res.feedbackSent) grantReviewGift();
-                    else { canReviewYa = false; renderModal(); }
-                }).catch(() => {});
-            } catch (e) {}
+            // Review gift disabled (Yandex-only feature; no CrazyGames
+            // equivalent). Kept as a safe no-op for any stale callers.
         }
         window._requestReviewForGift = requestReviewForGift;
 
@@ -3987,7 +3967,7 @@
         let companyName = window._companyName || 'Avia Co';   // player's airline name (≤9 chars)
         let reviewClaimed = false;   // ATR 72 review gift already granted on this account
         let reviewClaimedSession = false;  // off-platform: claimed during this session only
-        let canReviewYa = false;     // Yandex feedback.canReview() result (platform only)
+        let canReviewYa = false;     // legacy review flag (unused on CrazyGames)
         // Apply the company name to the header chip + keep the global in sync.
         function setCompanyName(name) {
             companyName = (name || '').trim().slice(0, 9) || 'Avia Co';
@@ -5665,7 +5645,7 @@
             if (paused) activeTweens.forEach(t => t.pause());
             else activeTweens.forEach(t => { t.timeScale(effSpeed()); t.play(); });
             syncPauseBtn();
-            // Mirror play/pause to Yandex GameplayAPI for catalog metrics.
+            // Mirror play/pause to the CrazyGames gameplay metrics.
             if (paused) gameplayStop(); else gameplayStart();
         }
 
@@ -5735,7 +5715,7 @@
         });
         document.getElementById('pm-tomenu').addEventListener('click', () => {
             closePauseMenu(false);
-            // Interstitial ad at a natural break (Yandex throttles frequency).
+            // Interstitial ad at a natural break (CrazyGames throttles frequency).
             if (window._showFullscreenAd) window._showFullscreenAd();
             if (window._refreshLeaderboard) window._refreshLeaderboard();
             else if (window._renderLeaderboard) window._renderLeaderboard();
@@ -5890,9 +5870,9 @@
             // Entering from the main menu is ALWAYS active play. Returning to
             // the menu via the pause sheet leaves isPaused=true (closePauseMenu
             // with resumeGame=false never clears it), which previously blocked
-            // gameplayStart() below — so Yandex GameplayAPI.start() was never
-            // re-fired and the "Game API" indicator stayed red. Clear the
-            // lingering pause state here so the metric restarts correctly.
+            // gameplayStart() below — so CrazyGames gameplayStart() was never
+            // re-fired. Clear the lingering pause state here so the metric
+            // restarts correctly.
             isPaused = false;
             pauseMenuOpen = false;
             updateUI(); updateStats(); syncPauseBtn(); setUiScale();
@@ -5903,31 +5883,30 @@
         };
 
         /* ============================================================
-           YANDEX GAMES SDK + SAVE / LOAD  (basic)
+           CRAZYGAMES SDK + SAVE / LOAD  (basic)
            - Initializes the SDK (falls back to localStorage off-platform).
            - Loads progress on start, autosaves on key events, and saves
              when the tab is hidden / closed.
            ============================================================ */
         const SAVE_KEY = 'aviacontrol_save_v1';
-        let ysdk = null;
-        let ysdkPlayer = null;
+        let cg = null;   // CrazyGames SDK handle (null off-platform / until init)
 
         /* ============================================================
-           GameplayAPI bridge — tells Yandex when active play starts/stops.
-           Yandex uses this for catalog metrics; it must be paired correctly
-           (start on play, stop on pause/menu/ad/tab-blur). De-duplicated so
-           we never fire two starts or two stops in a row.
+           Gameplay bridge — tells CrazyGames when active play starts/stops.
+           CrazyGames uses this for metrics and to gate the first-load size;
+           it must be paired correctly (start on play, stop on pause/menu/ad).
+           De-duplicated so we never fire two starts or two stops in a row.
            ============================================================ */
         let _gpActive = false;
         function gameplayStart() {
             if (_gpActive) return;
             _gpActive = true;
-            try { if (ysdk && ysdk.features && ysdk.features.GameplayAPI) ysdk.features.GameplayAPI.start(); } catch (e) {}
+            try { if (cg && cg.game) cg.game.gameplayStart(); } catch (e) {}
         }
         function gameplayStop() {
             if (!_gpActive) return;
             _gpActive = false;
-            try { if (ysdk && ysdk.features && ysdk.features.GameplayAPI) ysdk.features.GameplayAPI.stop(); } catch (e) {}
+            try { if (cg && cg.game) cg.game.gameplayStop(); } catch (e) {}
         }
 
         function buildSave() {
@@ -5979,10 +5958,10 @@
             const json = JSON.stringify(data);
             // localStorage fallback always (offline / desktop testing)
             try { localStorage.setItem(SAVE_KEY, json); } catch (e) {}
-            // Yandex cloud save when available. flush:true forces an immediate
-            // send (used when leaving / backgrounding the tab); the debounced
-            // autosave queues normally to stay under the rate limit.
-            if (ysdkPlayer) { try { ysdkPlayer.setData({ save: data }, !!flush); } catch (e) {} }
+            // CrazyGames cloud save — the data module is a localStorage-like
+            // store that syncs across devices for logged-in players (and uses
+            // LocalStorage internally for guests).
+            if (cg && cg.data) { try { cg.data.setItem(SAVE_KEY, json); } catch (e) {} }
             // Keep the leaderboard balance in sync with the saved score
             if (typeof lbSubmit === 'function') lbSubmit();
         }
@@ -6022,76 +6001,74 @@
             animate();
         }
 
-        function initYandexAndLoad() {
+        function initCrazyGamesAndLoad() {
             const proceed = (loaded) => {
                 if (loaded) applySave(loaded);
                 bootGame();
-                // Show the cached real board instantly (stale-while-revalidate).
+                // Show the cached board instantly, then render the local board.
                 lbLoadCache();
                 renderLeaderboard();
-                // Connect to the Yandex leaderboard, push the current score and
-                // pull the public board (best-effort; falls back to local).
-                if (ysdk) {
-                    lbConnect(ysdk).then(() => lbSubmitAndRefresh(true));   // force first fetch
-                    // Check whether the player can leave a Yandex review.
-                    try {
-                        if (ysdk.feedback && ysdk.feedback.canReview) {
-                            ysdk.feedback.canReview().then(res => {
-                                canReviewYa = !!(res && res.value);
-                            }).catch(() => { canReviewYa = false; });
-                        }
-                    } catch (e) { canReviewYa = false; }
-                }
-                if (ysdk && ysdk.features && ysdk.features.LoadingAPI) {
-                    try { ysdk.features.LoadingAPI.ready(); } catch (e) {}
-                }
+                // CrazyGames has no leaderboard API, so the in-game board always
+                // uses the local standings (lbSubmit/lbRefresh are no-ops here).
+                if (typeof lbSubmitAndRefresh === 'function') lbSubmitAndRefresh(true);
+                // Tell CrazyGames the game has finished loading and is playable.
+                try { if (cg && cg.game) cg.game.loadingStop(); } catch (e) {}
             };
 
-            if (typeof YaGames !== 'undefined' && YaGames.init) {
-                YaGames.init().then(sdk => {
-                    ysdk = sdk;
-                    window.ysdk = sdk;
-                    // ---- Automatic language detection (Yandex req. 2.14) ----
-                    // Read the player's language from the SDK environment at
-                    // launch and apply it to the menu/game before play starts.
+            // ---- Language detection ----
+            // CrazyGames has no language API, so detect from the browser.
+            // Only 'en'/'ru' are supported; everything else falls back to 'en'.
+            try {
+                const nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+                const lang = nav.indexOf('ru') === 0 ? 'ru' : 'en';
+                currentLang = lang;
+                if (window._applyDetectedLang) window._applyDetectedLang(lang);
+                else window._pendingDetectedLang = lang;
+            } catch (e) {}
+
+            // The local leaderboard always shows the player's own row.
+            lbAuthorized = true;
+
+            const SDK = (window.CrazyGames && window.CrazyGames.SDK) ? window.CrazyGames.SDK : null;
+            if (SDK && typeof SDK.init === 'function') {
+                Promise.resolve(SDK.init()).then(() => {
+                    cg = SDK;
+                    window.cg = SDK;
+                    // Bracket the in-game load for CrazyGames metrics (must be
+                    // called after init). loadingStop fires from proceed() once
+                    // the menu is ready; gameplayStart fires when play begins.
+                    try { if (cg.game) cg.game.loadingStart(); } catch (e) {}
+                    // Best-effort: use the CrazyGames account name + avatar for
+                    // the player's row on the local leaderboard.
                     try {
-                        const envLang = sdk && sdk.environment && sdk.environment.i18n && sdk.environment.i18n.lang;
-                        const lang = (envLang === 'en' || envLang === 'ru') ? envLang : 'en';
-                        currentLang = lang;
-                        if (window._applyDetectedLang) window._applyDetectedLang(lang);
-                        else window._pendingDetectedLang = lang;
+                        if (cg.user && cg.user.getUser) {
+                            cg.user.getUser().then(u => {
+                                if (u) {
+                                    if (u.username) LB_PLAYER_NAME = u.username;
+                                    if (u.profilePictureUrl) lbPlayerAvatar = u.profilePictureUrl;
+                                    renderLeaderboard();
+                                }
+                            }).catch(() => {});
+                        }
                     } catch (e) {}
-                    return sdk.getPlayer({ scopes: false }).catch(() => null);
-                }).then(player => {
-                    ysdkPlayer = player;
-                    if (player) {
-                        // Detect real Yandex login. Current API: isAuthorized();
-                        // fall back to the deprecated getMode() for old builds.
-                        try {
-                            if (typeof player.isAuthorized === 'function') lbAuthorized = !!player.isAuthorized();
-                            else if (player.getMode) lbAuthorized = (player.getMode() !== 'lite');
-                            else lbAuthorized = false;
-                        } catch (e) { lbAuthorized = false; }
-                        // Grab the Yandex avatar for the leaderboard (best effort)
-                        try {
-                            if (lbAuthorized && player.getPhoto) lbPlayerAvatar = player.getPhoto('medium') || '';
-                        } catch (e) {}
-                        player.getData(['save']).then(d => {
-                            proceed((d && d.save) ? d.save : loadLocal());
-                        }).catch(() => proceed(loadLocal()));
-                    } else {
-                        lbAuthorized = false;
-                        proceed(loadLocal());
-                    }
+                    // Load the cloud save (synced across devices for logged-in
+                    // players); fall back to the local save if it's empty.
+                    let cloud = null;
+                    try {
+                        if (cg.data) {
+                            const raw = cg.data.getItem(SAVE_KEY);
+                            cloud = raw ? JSON.parse(raw) : null;
+                        }
+                    } catch (e) { cloud = null; }
+                    proceed(cloud || loadLocal());
                 }).catch(() => proceed(loadLocal()));
             } else {
-                // Not on the Yandex platform — use the local fallback board.
-                lbAuthorized = true;   // show the demo "lovemaria" row in testing
+                // Not on CrazyGames — local board + LocalStorage save.
                 proceed(loadLocal());
             }
         }
 
-        initYandexAndLoad();
+        initCrazyGamesAndLoad();
 
         // Save when the player leaves / backgrounds the tab. Also pause the
         // gameplay metric while the tab is hidden, resume when it returns.
