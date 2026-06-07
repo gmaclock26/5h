@@ -8,8 +8,8 @@
     <title>Avia Control</title>
     <!-- Favicon is wired to the logo asset in JS (see LOGO_SRC) -->
     <link rel="icon" id="faviconLink" type="image/jpeg" href="icon.jpg">
-    <!-- Yandex Games SDK (loaded before the game; init handled in JS) -->
-    <script src="https://yandex.ru/games/sdk/v2"></script>
+    <!-- CrazyGames SDK V3 (loaded before the game; init handled in JS) -->
+    <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         /* ============================================================
@@ -604,37 +604,6 @@
         .modal-row.selected .modal-row-title { color: var(--accent); }
         .modal-row.locked { opacity: 0.55; }
 
-        /* Review-gift card (hangar, Yandex review → free ATR 72) */
-        .review-card {
-            background: linear-gradient(135deg, rgba(91,157,255,0.16), rgba(67,192,138,0.12));
-            border: 1px solid rgba(91,157,255,0.35);
-            border-radius: var(--radius-sm);
-            padding: 14px 14px;
-            margin-bottom: 12px;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-        .review-card-head { display: flex; align-items: center; gap: 10px; }
-        .review-card-star { color: #f5b820; flex-shrink: 0; display: flex; }
-        .review-card-star svg { width: 1.5rem; height: 1.5rem; }
-        .review-card-title { font-size: 0.92rem; font-weight: 700; color: var(--text-main); }
-        .review-card-text { font-size: 0.74rem; color: var(--text-sec); line-height: 1.45; }
-        .review-card-actions { display: flex; gap: 8px; }
-        .review-card-btn {
-            flex: 1;
-            background: var(--accent); color: #fff; border: none;
-            border-radius: var(--radius-sm); padding: 0.6rem 0.75rem;
-            font-family: inherit; font-size: 0.78rem; font-weight: 700;
-            cursor: pointer; transition: opacity 0.18s, transform 0.1s;
-        }
-        .review-card-btn:hover { opacity: 0.92; }
-        .review-card-btn:active { transform: scale(0.98); }
-        /* Full-width variant inside the buy grid (spans both columns) */
-        .review-card-grid {
-            grid-column: 1 / -1;
-            margin-bottom: 0;
-            border-radius: 1rem;
-            padding: 1rem 1.1rem;
-        }
         .modal-row-price { font-size: 0.74rem; font-weight: 600; color: var(--text-main); flex-shrink: 0; }
         .modal-row-price.owned { color: var(--ok); }
 
@@ -1201,128 +1170,6 @@
         }
         .login-ghost-btn:hover { border-color: var(--accent); color: var(--text-main); }
         #loginScreen.light .login-ghost-btn { border-color: rgba(20,30,50,0.14); }
-        /* The leaderboard button is only needed on mobile (desktop shows the panel) */
-        .login-lb-btn { display: none; }
-
-        /* ===== Leaderboard panel ===== */
-        .login-leaderboard {
-            flex: 1 1 360px;
-            max-width: 420px;
-            animation: loginFadeIn 0.6s ease both;
-            animation-delay: 0.6s;
-            opacity: 0;
-        }
-        .lb-backdrop { display: none; }
-        .lb-card {
-            display: flex;
-            flex-direction: column;
-            background: rgba(12,17,26,0.72);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: var(--radius);
-            padding: 18px 18px 12px;
-            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-            box-shadow: 0 16px 48px rgba(0,0,0,0.4);
-        }
-        #loginScreen.light .lb-card {
-            background: rgba(255,255,255,0.82);
-            border-color: rgba(20,30,50,0.1);
-        }
-        .lb-header {
-            display: flex; align-items: flex-start; justify-content: space-between;
-            padding: 0 4px 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-        #loginScreen.light .lb-header { border-bottom-color: rgba(20,30,50,0.08); }
-        .lb-header-text { display: flex; flex-direction: column; gap: 2px; }
-        .lb-title { font-size: 1rem; font-weight: 700; color: var(--text-main); letter-spacing: 0.3px; }
-        .lb-sub { font-size: 0.66rem; color: #6b7688; letter-spacing: 0.3px; }
-        .lb-close { display: none; background: transparent; border: none; color: var(--text-sec); font-size: 1.05rem; cursor: pointer; width: 30px; height: 30px; border-radius: var(--radius-sm); }
-        .lb-close:hover { color: var(--text-main); background: rgba(255,255,255,0.08); }
-        .lb-list {
-            display: flex; flex-direction: column;
-            margin-top: 6px;
-        }
-        .lb-row {
-            display: flex; align-items: center; gap: 12px;
-            padding: 9px 6px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-        }
-        #loginScreen.light .lb-row { border-bottom-color: rgba(20,30,50,0.05); }
-        .lb-row:last-child { border-bottom: none; }
-        .lb-rank {
-            flex: 0 0 1.6rem; text-align: center;
-            font-size: 0.86rem; font-weight: 700; color: #6b7688;
-        }
-        .lb-row.top1 .lb-rank { color: #f5b820; }
-        .lb-row.top2 .lb-rank { color: #b9c4d4; }
-        .lb-row.top3 .lb-rank { color: #cd7f32; }
-        .lb-avatar {
-            flex: 0 0 2rem; width: 2rem; height: 2rem;
-            border-radius: 50%; object-fit: cover;
-            background: var(--bg-card);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .lb-name {
-            flex: 1; min-width: 0;
-            font-size: 0.82rem; color: var(--text-main); font-weight: 500;
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .lb-you-tag {
-            font-size: 0.54rem; font-weight: 700; letter-spacing: 0.5px;
-            color: #fff; background: var(--accent);
-            padding: 2px 6px; border-radius: 6px; margin-left: 6px;
-            vertical-align: middle;
-        }
-        .lb-bal { flex: 0 0 auto; font-size: 0.82rem; font-weight: 700; color: var(--ok); }
-        .lb-row.is-me {
-            background: var(--accent-soft);
-            border-radius: var(--radius-sm);
-            border-bottom-color: transparent;
-        }
-        .lb-row.is-me .lb-name { color: var(--accent); font-weight: 700; }
-        .lb-gap { text-align: center; color: #6b7688; font-size: 1rem; letter-spacing: 2px; padding: 4px 0 2px; }
-
-        /* ===== Leaderboard as an overlay on mobile =====
-           Desktop shows the panel inline beside the card. On mobile we hide
-           the inline panel and reveal it as a centered overlay via the
-           "Leaderboard" button (between Play and Settings). */
-        body.is-mobile .login-lb-btn { display: block; }
-
-        body.is-mobile .login-leaderboard {
-            position: fixed; inset: 0; z-index: 10002;
-            max-width: none; flex: none;
-            display: none; align-items: center; justify-content: center;
-            padding: 16px; animation: none; opacity: 1;
-        }
-        body.is-mobile .login-leaderboard.open { display: flex; }
-        body.is-mobile .login-leaderboard .lb-backdrop {
-            display: block; position: absolute; inset: 0;
-            background: rgba(4,7,12,0.7);
-            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-        }
-        body.is-mobile.light-theme .login-leaderboard .lb-backdrop { background: rgba(150,165,190,0.5); }
-        body.is-mobile .login-leaderboard .lb-card {
-            position: relative; z-index: 1;
-            width: min(440px, 94vw); max-height: 88dvh; overflow: hidden;
-            display: flex; flex-direction: column;
-            animation: settingsCardIn 0.24s cubic-bezier(0.16,1,0.3,1) both;
-        }
-        /* Scroll the inner list (not the whole card) and reserve a gutter so the
-           thin scrollbar thumb sits beside the rows, never on top of them. */
-        body.is-mobile .login-leaderboard .lb-list {
-            overflow-y: auto; min-height: 0; flex: 1 1 auto;
-            padding-right: 8px;
-            scrollbar-gutter: stable;
-            touch-action: pan-y; overscroll-behavior: contain;
-            -webkit-overflow-scrolling: touch;
-        }
-        body.is-mobile .login-leaderboard .lb-close { display: flex; align-items: center; justify-content: center; }
-
-        /* Stack the brand panel above the leaderboard on narrow screens */
-        @media (max-width: 720px) {
-            .login-content { flex-direction: column; align-items: center; gap: 18px; width: min(420px, 92vw); }
-        }
-
         /* Settings overlay (opened from the login "Settings" button) */
         #settingsOverlay {
             position: fixed; inset: 0; z-index: 10001;
@@ -1935,12 +1782,6 @@
         body.is-mobile .buy-card-cta { font-size: 9px; padding: 3px 6px; border-radius: 6px; }
         body.is-mobile .buy-card-tag { font-size: 9px; top: 4px; left: 4px; padding: 2px 4px; }
         body.is-mobile .buy-card-badge { font-size: 9px; top: 4px; right: 4px; padding: 2px 5px; }
-        body.is-mobile .review-card-grid { padding: 9px 11px; border-radius: 12px; gap: 6px; margin-bottom: 0; }
-        body.is-mobile .review-card-head { gap: 7px; }
-        body.is-mobile .review-card-title { font-size: 12px; }
-        body.is-mobile .review-card-text { font-size: 10px; line-height: 1.35; }
-        body.is-mobile .review-card-btn { font-size: 11px; padding: 7px 10px; }
-        body.is-mobile .review-card-star svg { width: 17px; height: 17px; }
         body.is-mobile #confirmBox { width: calc(100vw - 40px); }
         body.is-mobile #pauseMenuSheet { width: calc(100vw - 24px); }
         body.is-mobile #planePopup { width: min(300px, calc(100vw - 24px)); }
@@ -1991,7 +1832,6 @@
             .modal-row:hover { background: transparent; }
             .panel-btn:hover { border-color: var(--border); }
             .ctrl-btn:hover { color: var(--text-sec); background: transparent; }
-            .review-card-btn:hover,
             .hangar-upgrade-btn:hover,
             .login-btn:hover { opacity: 1; }
             .hangar-upgrade-ad:hover { background: rgba(67,192,138,0.12); border-color: rgba(67,192,138,0.4); }
@@ -2056,25 +1896,10 @@
                         <input class="login-input" type="text" placeholder="Company name" id="loginUser" value="Avia Co" maxlength="9">
                     </div>
                     <button class="login-btn" id="loginBtn">Start</button>
-                    <button class="login-ghost-btn login-lb-btn" id="lbBtn"><span id="lbBtnLabel">Leaderboard</span></button>
                     <button class="login-ghost-btn login-settings-btn" id="settingsBtn"><span id="settingsBtnLabel">Settings</span></button>
                 </div>
             </div>
 
-            <!-- ===== LEADERBOARD ===== -->
-            <div class="login-leaderboard" id="loginLeaderboard">
-                <div class="lb-backdrop" id="lbBackdrop"></div>
-                <div class="lb-card">
-                    <div class="lb-header">
-                        <div class="lb-header-text">
-                            <span class="lb-title" id="lbTitle">Leaderboard</span>
-                            <span class="lb-sub" id="lbSub">Top 10 by balance</span>
-                        </div>
-                        <button class="lb-close" id="lbClose">&times;</button>
-                    </div>
-                    <div class="lb-list" id="lbList"></div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -2425,7 +2250,7 @@
     </div>
 
     <!-- Libraries as classic global scripts (no ES modules) so the game runs
-         both from a local file (file://) AND inside Yandex Games. -->
+         both from a local file (file://) AND inside CrazyGames. -->
     <script src="libs/three.min.js"></script>
     <script src="libs/OrbitControls.global.js"></script>
     <script src="libs/gsap.min.js"></script>
@@ -2490,10 +2315,7 @@
                     themeDark: 'Dark',
                     themeLight: 'Light',
                     currencyLabel: 'Currency',
-                    subtitle: 'Air Traffic Control',
-                    lbTitle: 'Leaderboard',
-                    lbSub: 'Top 10 by balance',
-                    lbBtn: 'Leaderboard'
+                    subtitle: 'Air Traffic Control'
                 },
                 ru: {
                     fieldLabel: 'Название компании',
@@ -2507,10 +2329,7 @@
                     themeDark: 'Тёмная',
                     themeLight: 'Светлая',
                     currencyLabel: 'Валюта',
-                    subtitle: 'Управление воздушным движением',
-                    lbTitle: 'Таблица лидеров',
-                    lbSub: 'Топ-10 по балансу',
-                    lbBtn: 'Таблица лидеров'
+                    subtitle: 'Управление воздушным движением'
                 }
             };
 
@@ -2522,7 +2341,6 @@
                 if (inp) inp.placeholder = t.placeholder;
                 set('loginBtn', t.btnText);
                 set('settingsBtnLabel', t.settingsBtn);
-                set('lbBtnLabel', t.lbBtn);
                 set('settingsCardTitle', t.settingsTitle);
                 set('settingsCompanyLabel', t.companyLabel);
                 set('settingsLangLabel', t.langLabel);
@@ -2531,8 +2349,6 @@
                 set('settingsThemeLight', t.themeLight);
                 set('settingsCurrencyLabel', t.currencyLabel);
                 set('loginSubtitle', t.subtitle);
-                set('lbTitle', t.lbTitle);
-                set('lbSub', t.lbSub);
                 // Text length changed → re-fit the menu so it never scrolls.
                 if (window._fitLogin) window._fitLogin();
                 else requestAnimationFrame(function () { if (window._fitLogin) window._fitLogin(); });
@@ -2606,29 +2422,6 @@
                     if (li) li.value = v;
                     if (window._setCompanyName) window._setCompanyName(v);
                 });
-            })();
-
-            // Leaderboard button (mobile) — opens the panel as a centered overlay
-            (function () {
-                var lb = document.getElementById('loginLeaderboard');
-                function openLb() {
-                    if (window._refreshLeaderboard) window._refreshLeaderboard();
-                    else if (window._renderLeaderboard) window._renderLeaderboard();
-                    // Clear any fit-scale so the fixed overlay positions correctly.
-                    var c = document.querySelector('.login-content');
-                    if (c) c.style.transform = 'none';
-                    lb.classList.add('open');
-                }
-                function closeLb() {
-                    lb.classList.remove('open');
-                    if (window._fitLogin) window._fitLogin();   // re-fit the menu
-                }
-                var lbBtn = document.getElementById('lbBtn');
-                var lbClose = document.getElementById('lbClose');
-                var lbBackdrop = document.getElementById('lbBackdrop');
-                if (lbBtn) lbBtn.addEventListener('click', openLb);
-                if (lbClose) lbClose.addEventListener('click', closeLb);
-                if (lbBackdrop) lbBackdrop.addEventListener('click', closeLb);
             })();
 
             document.querySelectorAll('.settings-pill[data-lang]').forEach(function (btn) {
@@ -3184,7 +2977,6 @@
                 pm_resume: "Resume", pm_menu: "Main menu", pm_quit: "Quit", pm_save: "Save", saved: "Progress saved",
                 pm_ad: "Watch ad", pm_ad_sub: "+{amt} bonus", pm_ad_wait: "Available in {time}", ad_reward: "Reward credited: {amt}", ad_failed: "Ad unavailable, try later", ad_loading: "Loading ad…",
                 pm_boost: "×2 boost", pm_boost_sub: "time & money", pm_boost_active: "×2 active · {time}", pm_boost_wait: "Available in {time}", boost_on: "×2 boost activated!", boost_label: "Boost",
-                review_title: "Rate the game", review_text: "Leave a review and get a free ATR 72!", review_btn: "Rate · get ATR 72", review_done: "Thanks! ATR 72 added to your hangar", review_skip: "Maybe later",
                 pax: "Passengers", alt: "Altitude", speed: "Speed", flight: "Flight",
                 hangar: "Hangar", choose_airport: "Choose airport",
                 aircraft_one: "aircraft", aircraft_many: "aircraft",
@@ -3228,7 +3020,6 @@
                 pm_resume: "Продолжить", pm_menu: "В меню", pm_quit: "Выйти", pm_save: "Сохранить", saved: "Прогресс сохранён",
                 pm_ad: "Смотреть рекламу", pm_ad_sub: "+{amt} бонус", pm_ad_wait: "Доступно через {time}", ad_reward: "Бонус начислен: {amt}", ad_failed: "Реклама недоступна, попробуйте позже", ad_loading: "Загрузка рекламы…",
                 pm_boost: "×2 ускорение", pm_boost_sub: "время и деньги", pm_boost_active: "×2 активно · {time}", pm_boost_wait: "Доступно через {time}", boost_on: "×2 ускорение включено!", boost_label: "Буст",
-                review_title: "Оцените игру", review_text: "Оставьте отзыв и получите ATR 72 бесплатно!", review_btn: "Оценить · получить ATR 72", review_done: "Спасибо! ATR 72 добавлен в ангар", review_skip: "Позже",
                 pax: "Пассажиры", alt: "Высота", speed: "Скорость", flight: "Рейс",
                 hangar: "Ангар", choose_airport: "Выбрать аэропорт",
                 aircraft_one: "самолёт", aircraft_many: "самолётов",
@@ -3314,7 +3105,7 @@
            tightest (min of the two ratios), a layout that fits the reference
            also fits — without overlap or clipping — at any smaller window.
            Smaller window => smaller UI. Works identically on a desktop browser
-           window, the Yandex console preview, or a phone.
+           window, the CrazyGames console preview, or a phone.
            ============================================================ */
         function setUiScale() {
             const vw = window.innerWidth, vh = window.innerHeight;
@@ -3337,12 +3128,12 @@
                 // fits (or we hit a sane floor). Runs in a few quick steps.
                 fitSidebar(base);
             }
-            // Keep the main menu fitting the viewport too (no scroll on Yandex).
+            // Keep the main menu fitting the viewport too (no scroll on CrazyGames).
             fitLogin();
         }
 
         /* Scale the login/main-menu content so it always fits the viewport.
-           The Yandex embed is shorter than a raw browser window, so the menu
+           The CrazyGames embed is shorter than a raw browser window, so the menu
            would otherwise overflow. NOTE: CSS transform:scale() does NOT change
            an element's layout size — so we must never rely on overflow scroll
            here (the screen is overflow:hidden). We just shrink the content
@@ -3395,7 +3186,7 @@
         applyLayoutMode();
         setUiScale();
         // Re-fit once everything (fonts, images) has loaded — the menu height
-        // can change after first paint, especially inside the Yandex embed.
+        // can change after first paint, especially inside the CrazyGames embed.
         window.addEventListener('load', () => { setUiScale(); if (window._fitLogin) window._fitLogin(); });
         // Recompute on every size change. orientationchange settles after a
         // tick, so re-run shortly after as well.
@@ -3480,222 +3271,14 @@
         }
 
         /* ============================================================
-           LEADERBOARD
-           Real Yandex leaderboard "lovemaria" when running on the platform;
-           a local fallback board (LB_WORLD) for offline/desktop testing.
-           Ranking is by balance. Non-authorized players never see a "…" gap
-           or their own rank — only the public top 10.
-           ============================================================ */
-        const LB_ID = 'lovemaria';            // Yandex leaderboard technical name
-        const LB_PLAYER_NAME = 'lovemaria';   // shown for the local fallback board
-        let lbPlayerAvatar = '';   // filled from Yandex SDK if available
-        let lbAuthorized = true;   // true off-platform; reflects real login on Yandex
-        let lbObject = null;       // ysdk.getLeaderboards() handle
-        let lbRealBoard = null;    // [{rank,name,bal,avatar,me}] from Yandex, else null
-        let lbUserRank = 0;        // player's real rank (0 = not on the board)
-
-        /* ---- Leaderboard cache (stale-while-revalidate) ----
-           Yandex getEntries is a network call and can take a second or more.
-           We persist the last real board to localStorage and show it INSTANTLY
-           on the next launch / menu open, then refresh in the background. This
-           removes the perceived load delay entirely. */
-        const LB_CACHE_KEY = 'aviacontrol_lb_cache_v1';
-        let _lbLastFetch = 0;                 // timestamp of last successful/started fetch
-        const LB_MIN_REFETCH_MS = 20000;      // don't hit the network more than ~once/20s
-        function lbSaveCache() {
-            try {
-                if (lbRealBoard && lbRealBoard.length) {
-                    localStorage.setItem(LB_CACHE_KEY, JSON.stringify({
-                        board: lbRealBoard, rank: lbUserRank, t: Date.now()
-                    }));
-                }
-            } catch (e) {}
-        }
-        function lbLoadCache() {
-            try {
-                const raw = localStorage.getItem(LB_CACHE_KEY);
-                if (!raw) return false;
-                const c = JSON.parse(raw);
-                if (c && Array.isArray(c.board) && c.board.length) {
-                    lbRealBoard = c.board;
-                    lbUserRank = c.rank || 0;
-                    return true;
-                }
-            } catch (e) {}
-            return false;
-        }
-
-        // Fixed rivals for the offline fallback (balance in USD, like `score`).
-        const LB_WORLD = [
-            { name: 'SkyTycoon',     bal: 184000000 },
-            { name: 'AeroBaron',     bal: 152500000 },
-            { name: 'JetStreamGuru', bal: 131000000 },
-            { name: 'CloudNine',     bal: 109800000 },
-            { name: 'MachOne',       bal: 92400000 },
-            { name: 'FlyHigh777',    bal: 78900000 },
-            { name: 'Captain_Vik',   bal: 64200000 },
-            { name: 'RunwayKing',    bal: 51700000 },
-            { name: 'Altitude',      bal: 43100000 },
-            { name: 'WingmanPro',    bal: 35600000 },
-            { name: 'Vector',        bal: 28900000 },
-            { name: 'Tailwind',      bal: 22400000 },
-            { name: 'GateA1',        bal: 17800000 },
-            { name: 'Nimbus',        bal: 13200000 },
-            { name: 'Propwash',      bal: 8600000 },
-        ];
-        // A neutral round avatar placeholder (data URI).
-        function lbAvatarFor(entry) {
-            if (entry.avatar) return entry.avatar;
-            if (entry.me && lbPlayerAvatar) return lbPlayerAvatar;
-            const letter = (entry.name[0] || '?').toUpperCase();
-            const hue = [...entry.name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
-            const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'>
-                <rect width='40' height='40' rx='20' fill='hsl(${hue},45%,42%)'/>
-                <text x='20' y='26' font-family='Inter,sans-serif' font-size='18' font-weight='700'
-                      fill='white' text-anchor='middle'>${letter}</text></svg>`;
-            return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-        }
-
-        function renderLeaderboard() {
-            const listEl = document.getElementById('lbList');
-            if (!listEl) return;
-
-            let board;
-            if (lbRealBoard) {
-                board = lbRealBoard.slice();
-            } else {
-                // Offline fallback: rivals + (only if authorized) the player.
-                board = LB_WORLD.map(e => ({ name: e.name, bal: e.bal, me: false }));
-                if (lbAuthorized) board.push({ name: LB_PLAYER_NAME, bal: (typeof score === 'number' ? score : 2000000), me: true });
-                board.sort((a, b) => b.bal - a.bal);
-                board.forEach((e, i) => e.rank = i + 1);
-            }
-
-            const meEntry = board.find(e => e.me);
-            const myRank = meEntry ? meEntry.rank : null;
-            const top10 = board.filter(e => e.rank <= 10).sort((a, b) => a.rank - b.rank);
-
-            const rowHtml = (e) => {
-                const cls = 'lb-row' + (e.me ? ' is-me' : '') + (e.rank <= 3 ? ' top' + e.rank : '');
-                const safeName = String(e.name).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
-                const youTag = e.me ? `<span class="lb-you-tag">${currentLang === 'ru' ? 'ВЫ' : 'YOU'}</span>` : '';
-                return `<div class="${cls}">
-                    <span class="lb-rank">${e.rank}</span>
-                    <img class="lb-avatar" src="${lbAvatarFor(e)}" alt="">
-                    <span class="lb-name">${safeName}${youTag}</span>
-                    <span class="lb-bal">${formatMoneyShort(e.bal)}</span>
-                </div>`;
-            };
-
-            let html = top10.map(rowHtml).join('');
-            // Show "…" + the player's own row ONLY for authorized players
-            // who are ranked outside the visible top 10.
-            if (lbAuthorized && myRank && myRank > 10 && meEntry) {
-                html += `<div class="lb-gap">···</div>`;
-                html += rowHtml(meEntry);
-            }
-            listEl.innerHTML = html;
-            // The board height just changed → re-fit the menu (no scroll).
-            if (window._fitLogin) window._fitLogin();
-        }
-        window._renderLeaderboard = renderLeaderboard;
-
-        /* ---- Yandex leaderboard wiring ----
-           Prefers the current `ysdk.leaderboards` API; falls back to the
-           deprecated `ysdk.getLeaderboards()` for older SDK builds. Both are
-           normalised to { setScore, getEntries }. */
-        let lbApi = null;            // normalised { setScore, getEntries }
-        function lbConnect(sdk) {
-            if (!sdk) return Promise.resolve();
-            // Current API: ysdk.leaderboards (object available directly).
-            if (sdk.leaderboards && sdk.leaderboards.getEntries) {
-                lbApi = {
-                    setScore: (name, score) => sdk.leaderboards.setScore(name, score),
-                    getEntries: (name, opts) => sdk.leaderboards.getEntries(name, opts)
-                };
-                lbObject = lbApi;
-                return Promise.resolve();
-            }
-            // Deprecated API: ysdk.getLeaderboards() → lb with *Leaderboard* names.
-            if (sdk.getLeaderboards) {
-                return sdk.getLeaderboards().then(lb => {
-                    lbApi = {
-                        setScore: (name, score) => lb.setLeaderboardScore(name, score),
-                        getEntries: (name, opts) => lb.getLeaderboardEntries(name, opts)
-                    };
-                    lbObject = lbApi;
-                }).catch(() => {});
-            }
-            return Promise.resolve();
-        }
-        // Submit the current balance (authorized players only).
-        // The Yandex leaderboard stores scores in RUB (the game's primary
-        // currency) so the platform's game card shows the same big number
-        // players see in-game. Internally `score` is in base units, so we
-        // multiply by the RUB rate here and divide back when reading entries.
-        function lbScoreRate() { return (currencies.RUB ? currencies.RUB.rate : 71); }
-        function lbSubmit() {
-            if (lbApi && lbAuthorized) {
-                const rub = Math.max(0, Math.round(score * lbScoreRate()));
-                try { Promise.resolve(lbApi.setScore(LB_ID, rub)).catch(() => {}); } catch (e) {}
-            }
-        }
-        // Fetch the public top 10 (+ the player's neighborhood when authorized)
-        // and render it. Falls back to the local board on any failure.
-        // `force` bypasses the refetch throttle (used on first connect).
-        function lbRefresh(force) {
-            if (!lbApi) { renderLeaderboard(); return; }
-            // Throttle: the cached board is already on screen, so skip network
-            // spam (and stay well under Yandex's 20 req / 5 min limit).
-            const now = Date.now();
-            if (!force && (now - _lbLastFetch) < LB_MIN_REFETCH_MS) { renderLeaderboard(); return; }
-            _lbLastFetch = now;
-            let p;
-            try {
-                // quantityAround must be ≥1 per the SDK; only request the
-                // "around me" neighbourhood when the player is authorized.
-                const opts = { quantityTop: 10, includeUser: lbAuthorized };
-                if (lbAuthorized) opts.quantityAround = 5;
-                p = lbApi.getEntries(LB_ID, opts);
-            } catch (e) { renderLeaderboard(); return; }
-            Promise.resolve(p).then(res => {
-                lbUserRank = (res && res.userRank) || 0;
-                const entries = (res && res.entries) || [];
-                const rate = lbScoreRate() || 1;
-                lbRealBoard = entries.map(en => {
-                    const pl = en.player || {};
-                    let avatar = '';
-                    try { avatar = pl.getAvatarSrc ? pl.getAvatarSrc('medium') : ''; } catch (e) {}
-                    return {
-                        rank: en.rank,
-                        // Stored in RUB on Yandex → back to base units for the
-                        // in-game board (formatMoney re-applies the currency rate).
-                        bal: en.score / rate,
-                        name: pl.publicName ? pl.publicName : (currentLang === 'ru' ? 'Игрок' : 'Player'),
-                        avatar: avatar,
-                        me: lbAuthorized && lbUserRank > 0 && en.rank === lbUserRank
-                    };
-                });
-                lbSaveCache();          // persist for instant load next time
-                renderLeaderboard();
-            }).catch(() => {
-                // Network failed — keep showing the cached/last board instead
-                // of dropping to the synthetic offline one.
-                renderLeaderboard();
-            });
-        }
-        // Submit + refetch (used on boot and when returning to the menu).
-        function lbSubmitAndRefresh(force) { lbSubmit(); lbRefresh(force); }
-        window._refreshLeaderboard = lbSubmitAndRefresh;
-
-        /* ============================================================
-           ADS  (Yandex)  — two formats:
+           ADS  (CrazyGames SDK V3)  — two formats:
            • Fullscreen interstitial: shown at natural breaks (return to menu).
-             Yandex throttles it (≈once/60s) so we just request it.
+             CrazyGames throttles it, so we request it only at natural breaks.
            • Rewarded video: the player opts in for an in-game cash bonus.
            Game audio/animation should pause while an ad plays.
            ============================================================ */
         let _adInProgress = false;
+        let _returningToMenu = false;
         // Fixed rewarded-ad bonus. Kept CONSTANT (not a % of balance) so the
         // amount on the pause-menu "Watch ad" button is identical in every
         // language and at any balance. Value is in base units; the currency
@@ -3714,7 +3297,7 @@
             const login = document.getElementById('loginScreen');
             const onMenu = login && login.style.display !== 'none' &&
                 getComputedStyle(login).display !== 'none';
-            const blocked = pauseMenuOpen || onMenu ||
+            const blocked = _returningToMenu || pauseMenuOpen || onMenu ||
                 (typeof selectModal !== 'undefined' && selectModal.classList.contains('open'));
             if (!blocked) pauseGame(false);
             else gameplayStop();
@@ -3740,37 +3323,38 @@
 
         /* Run a rewarded video. We PAUSE THE GAME IMMEDIATELY (before the ad
            is fetched) so there's no "keeps playing then freezes" lag while
-           Yandex prepares the ad — that perceived delay is what feels bad.
+           CrazyGames prepares the ad — that perceived delay is what feels bad.
            onReward fires only if the player actually earned the reward. */
         function runRewardedAd(onReward) {
             const d = i18n[currentLang];
-            if (!ysdk || !ysdk.adv) { onReward(); return; }   // off-platform: grant now
+            if (!cg || !cg.ad || !cg.ad.requestAd) { onReward(); return; }   // local/off-platform: grant now
             _adInProgress = true;
             pauseGame(true);                                  // instant pause, no wait
             showAdLoading();                                  // centered loader card
-            let rewarded = false;
-            const onOpen = () => { _adInProgress = true; hideAdLoading(); };
-            const onRewarded = () => { rewarded = true; };
-            const onClose = () => { hideAdLoading(); resumeAfterAd(); if (rewarded) onReward(); else flashDispatch(d.ad_failed, ''); };
-            const onError = () => { hideAdLoading(); resumeAfterAd(); flashDispatch(d.ad_failed, ''); };
+            let finished = false;
+            const callbacks = {
+                adStarted: () => { _adInProgress = true; hideAdLoading(); },
+                adFinished: () => { finished = true; hideAdLoading(); resumeAfterAd(); onReward(); },
+                adError: () => { hideAdLoading(); resumeAfterAd(); if (!finished) flashDispatch(d.ad_failed, ''); }
+            };
             try {
-                ysdk.adv.showRewardedVideo({ callbacks: {
-                    onOpen, onRewarded, onClose, onError,
-                    open: onOpen, rewarded: onRewarded, close: onClose, error: onError
-                } });
-            } catch (e) { hideAdLoading(); resumeAfterAd(); flashDispatch(d.ad_failed, ''); }
+                Promise.resolve(cg.ad.requestAd('rewarded', callbacks)).catch(callbacks.adError);
+            } catch (e) { callbacks.adError(); }
         }
 
-        // Interstitial (fullscreen) ad — safe no-op off-platform. Yandex
-        // throttles frequency; we pause on open and resume on close.
+        // Interstitial (midgame) ad — safe no-op off-platform. CrazyGames
+        // throttles frequency; we pause on start and resume on finish/error.
         function showFullscreenAd() {
-            if (!ysdk || !ysdk.adv || _adInProgress) return;
-            const onOpen = () => { _adInProgress = true; pauseGame(true); };
-            const onClose = () => { resumeAfterAd(); };
-            const onError = () => { resumeAfterAd(); };
+            if (!cg || !cg.ad || !cg.ad.requestAd || _adInProgress) return;
+            _adInProgress = true;
+            const callbacks = {
+                adStarted: () => { _adInProgress = true; pauseGame(true); },
+                adFinished: () => { resumeAfterAd(); },
+                adError: () => { resumeAfterAd(); }
+            };
             try {
-                ysdk.adv.showFullscreenAdv({ callbacks: { onOpen, onClose, onError, open: onOpen, close: onClose, error: onError } });
-            } catch (e) { resumeAfterAd(); }
+                Promise.resolve(cg.ad.requestAd('midgame', callbacks)).catch(callbacks.adError);
+            } catch (e) { callbacks.adError(); }
         }
         // Rewarded video — credits a cash bonus only if the player watched it.
         // After a successful reward the button is locked for AD_REWARD_COOLDOWN_MS
@@ -3799,6 +3383,10 @@
         /* Refresh the pause-menu rewarded-ad button: shows the bonus amount when
            ready, or a live "available in M:SS" countdown while on cooldown. */
         let _adRewardTimer = null;
+        const BOOST_MS = 2 * 60 * 1000;          // x2 active for 2 minutes
+        const BOOST_COOLDOWN_MS = 5 * 60 * 1000; // locked 5 min AFTER it ends
+        let boostUntil = 0;                      // timestamp x2 ends
+        let boostNextAt = 0;                     // timestamp x2 can be used again
         function updateAdRewardUI() {
             const btn = document.getElementById('pm-ad');
             if (!btn) return;
@@ -3850,83 +3438,6 @@
             });
         }
         window._showAdForUpgrade = showAdForUpgrade;
-
-        /* ============================================================
-           YANDEX REVIEW GIFT  — leave a review once → free ATR 72.
-           Only offered to authorized players who can review (per Yandex),
-           and only if not already claimed on this account (saved flag).
-           ============================================================ */
-        function reviewGiftAvailable() {
-            // Show the gift until it's been claimed. The actual "leave a review"
-            // gating (and one-per-account) is enforced at claim time by the
-            // Yandex feedback API + the persisted reviewClaimed flag. Showing it
-            // regardless keeps it visible both on the platform and locally.
-            const onYandex = (typeof ysdk !== 'undefined' && ysdk);
-            return onYandex ? !reviewClaimed : !reviewClaimedSession;
-        }
-        function grantReviewGift() {
-            const d = i18n[currentLang];
-            // Safety: need a free slot (the click-time check may be stale).
-            if (fleet.length >= hangarSlots()) { askConfirm(d.hangar_title, d.hangar_full, null, true); return; }
-            // Add the free ATR 72 and lock the gift forever on this account.
-            addPlane('ATR 72', HOME_BASE);
-            reviewClaimed = true;
-            reviewClaimedSession = true;
-            canReviewYa = false;
-            updateStats();
-            updateHangarBtn();
-            if (window._scheduleSave) window._scheduleSave();
-            flashDispatch(d.review_done, 'ok');
-            renderModal();   // re-render whatever hangar/buy view is open
-        }
-        function requestReviewForGift() {
-            const onYandex = (typeof ysdk !== 'undefined' && ysdk);
-            if (onYandex ? reviewClaimed : reviewClaimedSession) return;
-            const d = i18n[currentLang];
-            // The free aircraft needs a free hangar slot. If the hangar is full,
-            // tell the player but KEEP the gift available (don't consume it).
-            if (fleet.length >= hangarSlots()) {
-                askConfirm(d.hangar_title, d.hangar_full, null, true);
-                return;
-            }
-            if (!ysdk || !ysdk.feedback || !ysdk.feedback.requestReview) {
-                // Off-platform fallback (testing): grant directly.
-                grantReviewGift();
-                return;
-            }
-            try {
-                ysdk.feedback.requestReview().then(res => {
-                    // res.feedbackSent === true means the player actually rated.
-                    if (res && res.feedbackSent) grantReviewGift();
-                    else { canReviewYa = false; renderModal(); }
-                }).catch(() => {});
-            } catch (e) {}
-        }
-        window._requestReviewForGift = requestReviewForGift;
-
-        // Builds the review-gift card and appends it to the modal list (used by
-        // both the hangar home and the buy-aircraft menu).
-        function appendReviewCard(parent) {
-            if (!reviewGiftAvailable()) return;
-            const d = i18n[currentLang];
-            const rc = document.createElement('div');
-            rc.className = 'review-card' + (parent ? ' review-card-grid' : '');
-            rc.innerHTML = `
-                <div class="review-card-head">
-                    <span class="review-card-star">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6l1.7 4.15 4.38.38-3.32 2.88 1 4.28z"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-                    </span>
-                    <span class="review-card-title">${d.review_title}</span>
-                </div>
-                <div class="review-card-text">${d.review_text}</div>
-                <div class="review-card-actions">
-                    <button class="review-card-btn" id="reviewClaimBtn">${d.review_btn}</button>
-                </div>`;
-            (parent || modalList).appendChild(rc);
-            rc.querySelector('#reviewClaimBtn').addEventListener('click', () => {
-                if (window._requestReviewForGift) window._requestReviewForGift();
-            });
-        }
 
         // Format ms as M:SS for the boost button states.
         function fmtClock(ms) {
@@ -3985,9 +3496,6 @@
         let activeFlights = 0;
         let score = 2000000;      // starting balance
         let companyName = window._companyName || 'Avia Co';   // player's airline name (≤9 chars)
-        let reviewClaimed = false;   // ATR 72 review gift already granted on this account
-        let reviewClaimedSession = false;  // off-platform: claimed during this session only
-        let canReviewYa = false;     // Yandex feedback.canReview() result (platform only)
         // Apply the company name to the header chip + keep the global in sync.
         function setCompanyName(name) {
             companyName = (name || '').trim().slice(0, 9) || 'Avia Co';
@@ -4316,10 +3824,6 @@
             const d = i18n[currentLang];
             setText('modalTitle', d.hangar_title);
 
-            // Review gift card — only for authorized players who can review and
-            // haven't claimed it yet. One free ATR 72 per account.
-            appendReviewCard();
-
             // Level / upgrade card
             const lvlCard = document.createElement('div');
             lvlCard.className = 'hangar-level-card';
@@ -4437,10 +3941,7 @@
                 modalList.appendChild(warn);
             }
             const grid = document.createElement('div');
-            grid.className = 'buy-grid';
-            // Free ATR 72 for a review — full-width card spanning both columns.
-            appendReviewCard(grid);
-            [...aircraftModels].sort((a, b) => a.price - b.price).forEach(ac => {
+            grid.className = 'buy-grid';            [...aircraftModels].sort((a, b) => a.price - b.price).forEach(ac => {
                 const ownedCount = fleet.filter(p => p.modelName === ac.name).length;
                 const [c1, c2] = acColor(ac);
                 const card = document.createElement('div');
@@ -5121,10 +4622,6 @@
            Doubles both game speed (time) and flight income. The boost lasts
            BOOST_MS; once it ENDS, the button is locked for BOOST_COOLDOWN_MS
            before it can be watched/activated again (anti-farm). */
-        const BOOST_MS = 2 * 60 * 1000;          // x2 active for 2 minutes
-        const BOOST_COOLDOWN_MS = 5 * 60 * 1000; // locked 5 min AFTER it ends
-        let boostUntil = 0;                      // timestamp x2 ends
-        let boostNextAt = 0;                     // timestamp x2 can be used again
         let _boostWasActive = false;             // tracks expiry for tween resync
         function boostActive() { return Date.now() < boostUntil; }
         function boostMultiplier() { return boostActive() ? 2 : 1; }
@@ -5665,7 +5162,7 @@
             if (paused) activeTweens.forEach(t => t.pause());
             else activeTweens.forEach(t => { t.timeScale(effSpeed()); t.play(); });
             syncPauseBtn();
-            // Mirror play/pause to Yandex GameplayAPI for catalog metrics.
+            // Mirror play/pause to CrazyGames gameplay events for catalog metrics.
             if (paused) gameplayStop(); else gameplayStart();
         }
 
@@ -5735,10 +5232,9 @@
         });
         document.getElementById('pm-tomenu').addEventListener('click', () => {
             closePauseMenu(false);
-            // Interstitial ad at a natural break (Yandex throttles frequency).
+            // Interstitial ad at a natural break (CrazyGames throttles frequency).
+            _returningToMenu = true;
             if (window._showFullscreenAd) window._showFullscreenAd();
-            if (window._refreshLeaderboard) window._refreshLeaderboard();
-            else if (window._renderLeaderboard) window._renderLeaderboard();
             setTimeout(() => {
                 const sidebar = document.querySelector('.sidebar');
                 const viz = document.getElementById('visualizer');
@@ -5753,6 +5249,7 @@
                     loginScreen.style.transform = 'scale(1.05)';
                     loginScreen.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
                     if (window._fitLogin) window._fitLogin();   // fit to viewport (no scroll)
+                    _returningToMenu = false;
                     requestAnimationFrame(() => requestAnimationFrame(() => {
                         loginScreen.style.opacity = '1';
                         loginScreen.style.transform = 'scale(1)';
@@ -5890,8 +5387,8 @@
             // Entering from the main menu is ALWAYS active play. Returning to
             // the menu via the pause sheet leaves isPaused=true (closePauseMenu
             // with resumeGame=false never clears it), which previously blocked
-            // gameplayStart() below — so Yandex GameplayAPI.start() was never
-            // re-fired and the "Game API" indicator stayed red. Clear the
+            // gameplayStart() below — so CrazyGames gameplayStart() was never
+            // re-fired and the gameplay indicator stayed red. Clear the
             // lingering pause state here so the metric restarts correctly.
             isPaused = false;
             pauseMenuOpen = false;
@@ -5903,31 +5400,28 @@
         };
 
         /* ============================================================
-           YANDEX GAMES SDK + SAVE / LOAD  (basic)
+           CRAZYGAMES SDK V3 + SAVE / LOAD
            - Initializes the SDK (falls back to localStorage off-platform).
            - Loads progress on start, autosaves on key events, and saves
              when the tab is hidden / closed.
            ============================================================ */
         const SAVE_KEY = 'aviacontrol_save_v1';
-        let ysdk = null;
-        let ysdkPlayer = null;
+        let cg = null;
 
         /* ============================================================
-           GameplayAPI bridge — tells Yandex when active play starts/stops.
-           Yandex uses this for catalog metrics; it must be paired correctly
-           (start on play, stop on pause/menu/ad/tab-blur). De-duplicated so
-           we never fire two starts or two stops in a row.
+           Gameplay bridge — tells CrazyGames when active play starts/stops.
+           Calls are de-duplicated and only tied to actual gameplay/menu pauses.
            ============================================================ */
         let _gpActive = false;
         function gameplayStart() {
             if (_gpActive) return;
             _gpActive = true;
-            try { if (ysdk && ysdk.features && ysdk.features.GameplayAPI) ysdk.features.GameplayAPI.start(); } catch (e) {}
+            try { if (cg && cg.game && cg.game.gameplayStart) cg.game.gameplayStart(); } catch (e) {}
         }
         function gameplayStop() {
             if (!_gpActive) return;
             _gpActive = false;
-            try { if (ysdk && ysdk.features && ysdk.features.GameplayAPI) ysdk.features.GameplayAPI.stop(); } catch (e) {}
+            try { if (cg && cg.game && cg.game.gameplayStop) cg.game.gameplayStop(); } catch (e) {}
         }
 
         function buildSave() {
@@ -5935,7 +5429,6 @@
                 v: 1,
                 score: Math.round(score),
                 company: companyName,
-                reviewClaimed: reviewClaimed,
                 totalFlights,
                 hangarLevel,
                 fleet: fleet.map(p => ({ modelName: p.modelName, location: p.location })),
@@ -5949,10 +5442,8 @@
             try {
                 if (typeof data.score === 'number') score = data.score;
                 if (typeof data.company === 'string' && data.company.trim()) setCompanyName(data.company);
-                if (data.reviewClaimed === true) reviewClaimed = true;
                 if (typeof data.totalFlights === 'number') totalFlights = data.totalFlights;
                 if (typeof data.hangarLevel === 'number') hangarLevel = Math.max(1, Math.min(HANGAR_MAX_LEVEL, data.hangarLevel));
-                // Rebuild fleet (validate models/cities)
                 if (Array.isArray(data.fleet) && data.fleet.length) {
                     fleet.length = 0; fleetSeq = 0;
                     data.fleet.forEach(p => {
@@ -5961,11 +5452,9 @@
                         addPlane(okModel ? p.modelName : startingAircraft.name, okCity ? p.location : HOME_BASE);
                     });
                 }
-                // Licenses
                 if (Array.isArray(data.licenses)) {
                     data.licenses.forEach(r => { if (REGIONS[r]) ownedLicenses.add(r); });
                 }
-                // Completed routes (just for the stat count)
                 if (Array.isArray(data.routes)) {
                     completedRoutes.clear();
                     data.routes.forEach(r => completedRoutes.add(r));
@@ -5977,25 +5466,16 @@
         function persistSave(flush) {
             const data = buildSave();
             const json = JSON.stringify(data);
-            // localStorage fallback always (offline / desktop testing)
             try { localStorage.setItem(SAVE_KEY, json); } catch (e) {}
-            // Yandex cloud save when available. flush:true forces an immediate
-            // send (used when leaving / backgrounding the tab); the debounced
-            // autosave queues normally to stay under the rate limit.
-            if (ysdkPlayer) { try { ysdkPlayer.setData({ save: data }, !!flush); } catch (e) {} }
-            // Keep the leaderboard balance in sync with the saved score
-            if (typeof lbSubmit === 'function') lbSubmit();
+            if (cg && cg.data) { try { cg.data.setItem(SAVE_KEY, json); } catch (e) {} }
         }
 
-        // Debounced autosave so we don't hammer the cloud API
         let _saveTimer = null;
         function scheduleSave() {
             clearTimeout(_saveTimer);
             _saveTimer = setTimeout(() => persistSave(false), 1500);
         }
-        window._scheduleSave = scheduleSave;   // used by economy events
-        // Immediate, flushed save — used for discrete actions (e.g. renaming the
-        // company) so a quick F5 right after never loses the change.
+        window._scheduleSave = scheduleSave;
         function saveNow() { clearTimeout(_saveTimer); persistSave(true); }
         window._saveNow = saveNow;
 
@@ -6006,7 +5486,6 @@
             } catch (e) { return null; }
         }
 
-        // Boot the game after attempting to load progress.
         function bootGame() {
             setCompanyName(companyName);
             updateUI();
@@ -6017,87 +5496,50 @@
             populateRouteSelects();
             syncPauseBtn();
             updateBoostUI();
-            // Re-fit the sidebar now that all rows are populated.
             setUiScale();
             animate();
         }
 
-        function initYandexAndLoad() {
+        function initCrazyGamesAndLoad() {
             const proceed = (loaded) => {
                 if (loaded) applySave(loaded);
                 bootGame();
-                // Show the cached real board instantly (stale-while-revalidate).
-                lbLoadCache();
-                renderLeaderboard();
-                // Connect to the Yandex leaderboard, push the current score and
-                // pull the public board (best-effort; falls back to local).
-                if (ysdk) {
-                    lbConnect(ysdk).then(() => lbSubmitAndRefresh(true));   // force first fetch
-                    // Check whether the player can leave a Yandex review.
-                    try {
-                        if (ysdk.feedback && ysdk.feedback.canReview) {
-                            ysdk.feedback.canReview().then(res => {
-                                canReviewYa = !!(res && res.value);
-                            }).catch(() => { canReviewYa = false; });
-                        }
-                    } catch (e) { canReviewYa = false; }
-                }
-                if (ysdk && ysdk.features && ysdk.features.LoadingAPI) {
-                    try { ysdk.features.LoadingAPI.ready(); } catch (e) {}
-                }
+                try { if (cg && cg.game && cg.game.loadingStop) cg.game.loadingStop(); } catch (e) {}
             };
 
-            if (typeof YaGames !== 'undefined' && YaGames.init) {
-                YaGames.init().then(sdk => {
-                    ysdk = sdk;
-                    window.ysdk = sdk;
-                    // ---- Automatic language detection (Yandex req. 2.14) ----
-                    // Read the player's language from the SDK environment at
-                    // launch and apply it to the menu/game before play starts.
+            try {
+                const nav = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+                const lang = nav.indexOf('ru') === 0 ? 'ru' : 'en';
+                currentLang = lang;
+                if (window._applyDetectedLang) window._applyDetectedLang(lang);
+                else window._pendingDetectedLang = lang;
+            } catch (e) {}
+
+            const SDK = (window.CrazyGames && window.CrazyGames.SDK) ? window.CrazyGames.SDK : null;
+            if (SDK && typeof SDK.init === 'function') {
+                Promise.resolve(SDK.init()).then(() => {
+                    cg = SDK;
+                    window.cg = SDK;
+                    try { if (cg.game && cg.game.loadingStart) cg.game.loadingStart(); } catch (e) {}
+                    let cloud = null;
                     try {
-                        const envLang = sdk && sdk.environment && sdk.environment.i18n && sdk.environment.i18n.lang;
-                        const lang = (envLang === 'en' || envLang === 'ru') ? envLang : 'en';
-                        currentLang = lang;
-                        if (window._applyDetectedLang) window._applyDetectedLang(lang);
-                        else window._pendingDetectedLang = lang;
-                    } catch (e) {}
-                    return sdk.getPlayer({ scopes: false }).catch(() => null);
-                }).then(player => {
-                    ysdkPlayer = player;
-                    if (player) {
-                        // Detect real Yandex login. Current API: isAuthorized();
-                        // fall back to the deprecated getMode() for old builds.
-                        try {
-                            if (typeof player.isAuthorized === 'function') lbAuthorized = !!player.isAuthorized();
-                            else if (player.getMode) lbAuthorized = (player.getMode() !== 'lite');
-                            else lbAuthorized = false;
-                        } catch (e) { lbAuthorized = false; }
-                        // Grab the Yandex avatar for the leaderboard (best effort)
-                        try {
-                            if (lbAuthorized && player.getPhoto) lbPlayerAvatar = player.getPhoto('medium') || '';
-                        } catch (e) {}
-                        player.getData(['save']).then(d => {
-                            proceed((d && d.save) ? d.save : loadLocal());
-                        }).catch(() => proceed(loadLocal()));
-                    } else {
-                        lbAuthorized = false;
-                        proceed(loadLocal());
-                    }
+                        if (cg.data) {
+                            const raw = cg.data.getItem(SAVE_KEY);
+                            cloud = raw ? JSON.parse(raw) : null;
+                        }
+                    } catch (e) { cloud = null; }
+                    proceed(cloud || loadLocal());
                 }).catch(() => proceed(loadLocal()));
             } else {
-                // Not on the Yandex platform — use the local fallback board.
-                lbAuthorized = true;   // show the demo "lovemaria" row in testing
                 proceed(loadLocal());
             }
         }
 
-        initYandexAndLoad();
+        initCrazyGamesAndLoad();
 
-        // Save when the player leaves / backgrounds the tab. Also pause the
-        // gameplay metric while the tab is hidden, resume when it returns.
+        // Save when the player leaves / backgrounds the tab.
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) { persistSave(true); gameplayStop(); }
-            else if (!isPaused && !pauseMenuOpen && !selectModal.classList.contains('open')) { gameplayStart(); }
+            if (document.hidden) persistSave(true);
         });
         window.addEventListener('pagehide', () => persistSave(true));
         window.addEventListener('beforeunload', () => persistSave(true));
