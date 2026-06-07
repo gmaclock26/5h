@@ -1,0 +1,26 @@
+{
+    "kiroAgent.trustedCommands": [
+        "",
+        "node _gen_tex.mjs",
+        "node -e \"const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const s=[...h.matchAll(/<script(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]);let i=0;for(const c of s){i++;try{new Function(c);}catch(e){if(!/await is only valid|return outside|import|export/.test(e.message)){console.log('SCRIPT '+i+' ERROR:',e.message);}}}console.log('checked',s.length,'inline scripts');\"",
+        "node -e \"const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const s=[...h.matchAll(/<script(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]);let i=0;for(const c of s){i++;try{new Function(c);}catch(e){if(!/await is only valid|return outside|import|export/.test(e.message)){console.log('SCRIPT '+i+' ERROR:',e.message);}}}console.log('checked',s.length,'inline scripts OK');\"",
+        "node -e \"const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const s=[...h.matchAll(/<script(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]);let i=0,bad=0;for(const c of s){i++;try{new Function(c);}catch(e){if(!/await is only valid|return outside|import|export/.test(e.message)){console.log('SCRIPT '+i+' ERROR:',e.message);bad++;}}}console.log('checked',s.length,'scripts, errors:',bad);\"",
+        "node -e \"function eco(cap,dist,demand,sat){const carried=Math.min(demand,cap);const fare=110+dist*26;const f=Math.pow(0.5,sat);const rev=Math.round(carried*fare*f);const cost=Math.round(cap*dist*22+800);return rev-cost;} const cap=12,dist=2.2,dem=200; for(let s=0;s<5;s++) console.log('LON-MAN flight #' + (s+1) + ' net:', eco(cap,dist,dem,s));\"",
+        "node -e \"const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const s=[...h.matchAll(/<script(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]);let i=0,bad=0;for(const c of s){i++;try{new Function(c);}catch(e){if(!/await is only valid|return outside|import|export/.test(e.message)){console.log('SCRIPT '+i+' ERROR:',e.message);bad++;}}}console.log('checked',s.length,'scripts OK, errors:',bad);\"",
+        "powershell -Command \"Get-ChildItem air | Select-Object Name,Length | Format-Table -AutoSize\"",
+        "node _smoke.mjs",
+        "node -e \"const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const ids=[...h.matchAll(/id=\\x22([a-zA-Z0-9_-]+)\\x22/g)].map(m=>m[1]);const seen={},dup={};ids.forEach(x=>{if(seen[x])dup[x]=(dup[x]||1)+1;seen[x]=1;});const d=Object.keys(dup);console.log('total ids:',ids.length,'duplicates:',d.length?d.join(', '):'none');\"",
+        "node -e \"const fs=require('fs');const h=fs.readFileSync('index.html','utf8');const s=[...h.matchAll(/<script(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)<\\/script>/gi)].map(m=>m[1]);let i=0,bad=0;for(const c of s){i++;try{new Function(c);}catch(e){if(!/await is only valid|return outside|import|export/.test(e.message)){console.log('SCRIPT '+i+' ERROR:',e.message);bad++;}}}console.log('checked',s.length,'inline scripts, errors:',bad);\"",
+        "powershell -Command \"Write-Output '--- root ---'; Get-ChildItem -File | Select-Object Name; Write-Output '--- libs ---'; Get-ChildItem libs -File | Select-Object Name; Write-Output '--- air ---'; (Get-ChildItem air -File).Count; Write-Output '--- textures ---'; Get-ChildItem textures -File | Select-Object Name; Write-Output '--- flags count ---'; (Get-ChildItem flags -File).Count\"",
+        "node _smoke.mjs ; del _smoke.mjs",
+        "powershell -Command \"Get-ChildItem -Recurse -File | Where-Object { $_.Name -match '[\\s\\u0400-\\u04FF]' } | Select-Object FullName\"",
+        "node -e \"const fs=require('fs');function walk(d,b){for(const e of fs.readdirSync(d,{withFileTypes:true})){const n=e.name;if(/[\\s\\u0400-\\u04FF]/.test(n))console.log('BAD NAME:',b+'/'+n);if(e.isDirectory())walk(d+'/'+n,b+'/'+n);}}walk('.','.');console.log('name check done');\"",
+        "node -e \"const fs=require('fs');let t=0;function walk(d){for(const e of fs.readdirSync(d,{withFileTypes:true})){const p=d+'/'+e.name;if(e.isDirectory())walk(p);else t+=fs.statSync(p).size;}}walk('.');console.log('total MB:',(t/1048576).toFixed(2));\"",
+        "node -e \"const MAX=0.70,FULL=14;function ratio(fd){return Math.min(MAX,(fd/FULL)*MAX);} [0,1,3,7,10,14,20].forEach(fd=>console.log('ferryDist',fd,'-> '+Math.round(ratio(fd)*100)+'%'));\"",
+        "powershell -Command \"$f = Get-Item 'flags\\fi.png'; Add-Type -AssemblyName System.Drawing; $img = [System.Drawing.Image]::FromFile($f.FullName); Write-Output ('fi.png ' + $img.Width + 'x' + $img.Height + ' ' + $f.Length + ' bytes'); $img.Dispose()\"",
+        "powershell -ExecutionPolicy Bypass -File _flagsize.ps1",
+        "powershell -ExecutionPolicy Bypass -File _makeflags.ps1",
+        "powershell -Command \"Get-ChildItem flags\\lt.png,flags\\lv.png,flags\\ee.png | ForEach-Object { Write-Output ($_.Name + ' ' + $_.Length + ' bytes') }\"",
+        "powershell -Command \"(Get-Content 'index.html' | Measure-Object -Line).Lines\""
+    ]
+}
